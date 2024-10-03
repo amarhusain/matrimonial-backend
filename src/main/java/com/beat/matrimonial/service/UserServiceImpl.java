@@ -34,12 +34,7 @@ public class UserServiceImpl implements UserService {
 
         return UserResponse.builder()
             .id(user.getId())
-            .name(user.getName())
             .email(user.getEmail())
-            .dob(user.getDateOfBirth())
-            .gender(user.getGender())
-            .religion(user.getReligion())
-            .occupation(user.getOccupation())
             .build();
     }
 
@@ -47,11 +42,6 @@ public class UserServiceImpl implements UserService {
     public User updateUser(Long id, User user) {
         User existingUser = userRepository.findById(id).orElse(null);
         if (existingUser != null) {
-            existingUser.setName(user.getName());
-            existingUser.setDateOfBirth(user.getDateOfBirth());
-            existingUser.setGender(user.getGender());
-            existingUser.setReligion(user.getReligion());
-            existingUser.setOccupation(user.getOccupation());
             return userRepository.save(existingUser);
         }
         return null;
