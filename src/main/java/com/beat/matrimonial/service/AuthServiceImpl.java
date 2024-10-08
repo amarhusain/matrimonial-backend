@@ -5,6 +5,7 @@ import com.beat.matrimonial.entity.Role;
 import com.beat.matrimonial.entity.User;
 import com.beat.matrimonial.enums.ERole;
 import com.beat.matrimonial.exception.InvalidOtpException;
+import com.beat.matrimonial.exception.ResourceNotFoundException;
 import com.beat.matrimonial.exception.RoleNotFoundException;
 import com.beat.matrimonial.exception.SignupRequestNotFoundException;
 import com.beat.matrimonial.exception.UnauthorizedException;
@@ -34,6 +35,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -72,9 +74,7 @@ public class AuthServiceImpl implements AuthService {
       Authentication authentication = authenticationManager.authenticate(
           new UsernamePasswordAuthenticationToken(
               loginRequest.getUsername(),
-              loginRequest.getPassword()
-          )
-      );
+              loginRequest.getPassword()));
 
       SecurityContextHolder.getContext().setAuthentication(authentication);
       String jwt = jwtUtils.generateJwtToken(authentication);
@@ -83,14 +83,24 @@ public class AuthServiceImpl implements AuthService {
       List<String> roles = userDetails.getAuthorities().stream()
           .map(item -> item.getAuthority())
           .collect(Collectors.toList());
-
-      return new JwtResponse(jwt, userDetails.getId(), userDetails.getUsername(), roles);
+      Profile profile = profileRepository.findByUserId(userDetails.getId())
+          .orElseThrow(() -> new ResourceNotFoundException(
+              "Profile not found for user ID: " + userDetails.getId()));
+      return JwtResponse.builder()
+          .token(jwt)
+          .id(userDetails.getId())
+          .email(userDetails.getUsername())
+          .firstName(profile.getFirstName())
+          .middleName(profile.getMiddleName())
+          .lastName(profile.getLastName())
+          .profilePictureUrl(profile.getProfilePictureUrl())
+          .roles(roles)
+          .build();
 
     } catch (BadCredentialsException e) {
       throw new UnauthorizedException("Invalid credentials");
     }
   }
-
 
   @Override
   public String initiateSignup(SignupRequest signupRequest) {
@@ -145,6 +155,17 @@ public class AuthServiceImpl implements AuthService {
 
     return new MessageResponse("User registered successfully!");
   }
+
+  @Override
+  public User getCurrentUser() {
+    UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication()
+        .getPrincipal();
+    String username = userDetails.getUsername();
+    return userRepository.findByEmail(username) // here username is email id of user
+        .orElseThrow(() -> new RuntimeException("User not found"));
+
+  }
+
 
   private User createUser(SignupRequest signupRequest) {
     User newUser = User.builder()

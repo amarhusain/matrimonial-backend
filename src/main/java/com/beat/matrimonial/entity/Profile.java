@@ -1,6 +1,7 @@
 package com.beat.matrimonial.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -49,6 +50,10 @@ public class Profile {
   @Column(name = "religion", nullable = true, length = 50)
   private String religion;
 
+  @Column(name = "sect", nullable = true, length = 50)
+  private String sect;
+
+
   @Column(name = "occupation", nullable = true, length = 100)
   private String occupation;
 
@@ -70,9 +75,11 @@ public class Profile {
   @Column(name = "bio", length = 50)
   private String bio;
 
+  @JsonIgnore
   @Column(name = "created_at")
   private LocalDateTime createdAt;
 
+  @JsonIgnore
   @Column(name = "updated_at")
   private LocalDateTime updatedAt;
 

@@ -29,8 +29,7 @@ public class UserDetailsImpl implements UserDetails {
     this.id = id;
     if (email != null) {
       this.username = email;
-    }
-    if (mobile != null) {
+    } else if (mobile != null) {
       this.username = mobile;
     }
     this.password = password;

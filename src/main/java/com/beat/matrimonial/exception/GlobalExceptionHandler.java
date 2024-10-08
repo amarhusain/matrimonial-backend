@@ -62,6 +62,15 @@ public class GlobalExceptionHandler {
         HttpStatus.NOT_FOUND);
   }
 
+  @ExceptionHandler(UnderageException.class)
+  public ResponseEntity<Object> handleUnderageExceptionException(UnderageException ex,
+      WebRequest request) {
+    String errorMessage = "Underage: " + ex.getMessage();
+    return new ResponseEntity<>(
+        generateErrorResponse("BAD_REQUEST", errorMessage, request.getDescription(false)),
+        HttpStatus.BAD_REQUEST);
+  }
+
   @ExceptionHandler(UnauthorizedException.class)
   public final ResponseEntity<ErrorResponse> unauthorizedException(UnauthorizedException ex,
       WebRequest request) {

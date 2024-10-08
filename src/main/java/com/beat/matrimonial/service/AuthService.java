@@ -1,5 +1,6 @@
 package com.beat.matrimonial.service;
 
+import com.beat.matrimonial.entity.User;
 import com.beat.matrimonial.payload.request.LoginRequest;
 import com.beat.matrimonial.payload.request.OtpValidationRequest;
 import com.beat.matrimonial.payload.request.SignupRequest;
@@ -17,5 +18,6 @@ public interface AuthService {
   public MessageResponse validateOtpAndCompleteSignup(
       @Valid OtpValidationRequest otpValidationRequest);
 
+  User getCurrentUser();
 
 }

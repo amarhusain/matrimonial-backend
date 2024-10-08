@@ -54,11 +54,7 @@ public class AuthControllerImpl implements AuthController {
   public ResponseEntity<String> initiateSignup(
       @Valid @RequestBody SignupRequest signUpRequest) {
     String messageResponse = authService.initiateSignup(signUpRequest);
-    if (messageResponse != null) {
-      return ResponseEntity.ok(messageResponse);
-    } else {
-      return ResponseEntity.notFound().build();
-    }
+    return ResponseEntity.ok(messageResponse);
   }
 
 }

@@ -1,16 +1,19 @@
 package com.beat.matrimonial.service;
 
 import com.beat.matrimonial.entity.User;
+import com.beat.matrimonial.payload.response.MessageResponse;
 import com.beat.matrimonial.payload.response.UserResponse;
 import java.util.List;
 
 public interface UserService {
 
-    List<User> getAllUsers();
+  List<User> getAllUsers();
 
-    UserResponse getUserById(Long id);
+  UserResponse getUserById(Long id);
 
-    User updateUser(Long id, User user);
+  User updateUser(Long id, User user);
 
-    void deleteUser(Long id);
+  void deleteUser(Long id);
+
+  MessageResponse updateUserField(String fieldName, Object value);
 }
