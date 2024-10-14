@@ -1,12 +1,12 @@
 package com.beat.matrimonial.service;
 
+import com.beat.matrimonial.dto.ProfileSearchDTO;
+import com.beat.matrimonial.dto.SearchCriteria;
 import com.beat.matrimonial.entity.Profile;
 import com.beat.matrimonial.payload.response.MessageResponse;
 import com.beat.matrimonial.payload.response.ProfileResponse;
-import java.io.IOException;
-import org.springframework.core.io.Resource;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface ProfileService {
 
@@ -18,8 +18,8 @@ public interface ProfileService {
 
   MessageResponse updateReligionAndSect(String religion, String sect);
 
-  public MessageResponse saveProfileImage(MultipartFile file) throws IOException;
+  Page<ProfileSearchDTO> searchProfiles(SearchCriteria criteria, Pageable pageable);
 
-  public ResponseEntity<Resource> getProfileImageUrl();
+  Profile getCurrentUserProfile();
 
 }

@@ -69,8 +69,8 @@ public class Profile {
   @Column(name = "country", length = 50)
   private String country;
 
-  @Column(name = "profile_picture_url")
-  private String profilePictureUrl;
+  @Column(name = "photo_url")
+  private String photoUrl;
 
   @Column(name = "bio", length = 50)
   private String bio;
@@ -87,4 +87,15 @@ public class Profile {
   @JoinColumn(name = "user_id", nullable = false)
   private User user;
 
+  @Column(name = "height")
+  private String height;
+
+  @Column(name = "income", length = 50)
+  private String income;
+
+  @Column(name = "marital_status", length = 50)
+  private String maritalStatus;
+
+  @Column(name = "workplace")
+  private String workplace;
 }

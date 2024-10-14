@@ -93,7 +93,7 @@ public class AuthServiceImpl implements AuthService {
           .firstName(profile.getFirstName())
           .middleName(profile.getMiddleName())
           .lastName(profile.getLastName())
-          .profilePictureUrl(profile.getProfilePictureUrl())
+          .photoUrl(profile.getPhotoUrl())
           .roles(roles)
           .build();
 

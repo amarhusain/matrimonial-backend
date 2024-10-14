@@ -14,8 +14,6 @@ public interface ProfileSearchProjection {
 
   LocalDate getDateOfBirth();
 
-  String getGender();
-
   String getReligion();
 
   String getSect();
@@ -24,5 +22,17 @@ public interface ProfileSearchProjection {
 
   String getCity();
 
-  String getProfilePictureUrl();
+  String getState();
+
+  String getCountry();
+
+  String getHeight();
+
+  String getIncome();
+
+  String getMaritalStatus();
+
+  String getWorkplace();
+
+  String getPhotoUrl();
 }

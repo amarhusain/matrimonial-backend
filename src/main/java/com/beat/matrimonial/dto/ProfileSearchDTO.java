@@ -11,25 +11,23 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ProfileDto {
+public class ProfileSearchDTO {
 
   private Long id;
   private String firstName;
   private String middleName;
   private String lastName;
   private LocalDate dateOfBirth;
-  private String gender;
   private String religion;
   private String sect;
   private String occupation;
-  private String address;
   private String city;
   private String state;
   private String country;
   private String height;
+  private String income;
   private String maritalStatus;
   private String workplace;
   private String photoUrl;
-  private String bio;
 
 }

@@ -1,5 +1,6 @@
 package com.beat.matrimonial.exception;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -79,6 +80,33 @@ public class GlobalExceptionHandler {
         HttpStatus.UNAUTHORIZED);
   }
 
+  @ExceptionHandler(MaxUploadSizeExceededException.class)
+  public final ResponseEntity<ErrorResponse> handleMaxUploadSizeExceededException(
+      MaxUploadSizeExceededException ex, WebRequest request) {
+    return new ResponseEntity<>(
+        generateErrorResponse("BAD_REQUEST", ex.getMessage(),
+            request.getDescription(false)),
+        HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(FileUploadException.class)
+  public final ResponseEntity<ErrorResponse> handleFileUploadException(
+      FileUploadException ex, WebRequest request) {
+    return new ResponseEntity<>(
+        generateErrorResponse("BAD_REQUEST", ex.getMessage(),
+            request.getDescription(false)),
+        HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(IOException.class)
+  public final ResponseEntity<ErrorResponse> handleIOException(
+      IOException ex, WebRequest request) {
+    return new ResponseEntity<>(
+        generateErrorResponse("INTERNAL_SERVER_ERROR", ex.getMessage(),
+            request.getDescription(false)),
+        HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
   @ExceptionHandler(Exception.class)
   public final ResponseEntity<ErrorResponse> handleAllExceptions(Exception ex, WebRequest request) {
     return new ResponseEntity<>(
@@ -86,6 +114,7 @@ public class GlobalExceptionHandler {
             request.getDescription(false)),
         HttpStatus.INTERNAL_SERVER_ERROR);
   }
+
 
   private ErrorResponse generateErrorResponse(String errorCode, String errorMessage,
       String errorDetail) {

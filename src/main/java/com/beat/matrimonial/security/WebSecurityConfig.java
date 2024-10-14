@@ -70,6 +70,8 @@ public class WebSecurityConfig {
             auth.requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/test/**").permitAll()
                 .requestMatchers("/actuator/health").permitAll()
+                .requestMatchers("/api/profiles/search/**").permitAll()
+                .requestMatchers("/api/images/base65/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/swagger-api-docs/**").permitAll()
                 .anyRequest().authenticated());
     http.authenticationProvider(authenticationProvider());
@@ -91,5 +93,6 @@ public class WebSecurityConfig {
     source.registerCorsConfiguration("/**", config);
     return new CorsFilter(source);
   }
+
 
 }

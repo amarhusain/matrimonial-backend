@@ -1,6 +1,10 @@
 package com.beat.matrimonial.service;
 
+import com.beat.matrimonial.awss3.S3Service;
 import com.beat.matrimonial.dto.ProfileDto;
+import com.beat.matrimonial.dto.ProfileSearchDTO;
+import com.beat.matrimonial.dto.ProfileSearchProjection;
+import com.beat.matrimonial.dto.SearchCriteria;
 import com.beat.matrimonial.dto.UserDto;
 import com.beat.matrimonial.entity.Profile;
 import com.beat.matrimonial.entity.User;
@@ -10,33 +14,26 @@ import com.beat.matrimonial.payload.response.MessageResponse;
 import com.beat.matrimonial.payload.response.ProfileResponse;
 import com.beat.matrimonial.repository.ProfileRepository;
 import com.beat.matrimonial.repository.UserRepository;
-import java.io.IOException;
 import java.lang.reflect.Field;
-import java.net.MalformedURLException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class ProfileServiceImpl implements ProfileService {
 
   private final ProfileRepository profileRepository;
   private final UserRepository userRepository;
-  private final AuthService authService;
-
   private final String uploadDir = "./uploads/";
 
   private final Path fileStorageLocation;
@@ -45,10 +42,10 @@ public class ProfileServiceImpl implements ProfileService {
   public ProfileServiceImpl(
       ProfileRepository profileRepository,
       UserRepository userRepository,
-      AuthService authService) {
+      AuthService authService,
+      S3Service s3Service) {
     this.profileRepository = profileRepository;
     this.userRepository = userRepository;
-    this.authService = authService;
     this.fileStorageLocation = Paths.get(uploadDir).toAbsolutePath().normalize();
   }
 
@@ -100,7 +97,7 @@ public class ProfileServiceImpl implements ProfileService {
       profile.setCity(profileDetails.getCity());
       profile.setState(profileDetails.getState());
       profile.setCountry(profileDetails.getCountry());
-      profile.setProfilePictureUrl(profileDetails.getProfilePictureUrl());
+      profile.setPhotoUrl(profileDetails.getPhotoUrl());
       profile.setBio(profileDetails.getBio());
 
       return profileRepository.save(profile);
@@ -142,44 +139,17 @@ public class ProfileServiceImpl implements ProfileService {
   }
 
   @Override
-  public MessageResponse saveProfileImage(MultipartFile file) throws IOException {
-    String fileName = file.getOriginalFilename();
-    Path filePath = Paths.get(uploadDir + fileName);
-    Files.createDirectories(filePath.getParent());
-    Files.write(filePath, file.getBytes());
-
-    Profile profile = getCurrentUserProfile();
-    profile.setProfilePictureUrl(fileName);
-    profileRepository.save(profile);
-    return new MessageResponse("Profile picture uploaded successfully");
+  public Page<ProfileSearchDTO> searchProfiles(SearchCriteria criteria, Pageable pageable) {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    boolean isAuthorized = authentication != null && authentication.isAuthenticated()
+        && !"anonymousUser".equals(authentication.getPrincipal());
+    Page<ProfileSearchProjection> profiles = profileRepository.findProfileByCriteria(criteria,
+        pageable);
+    return profiles.map(profile -> mapToProfileSearchDTO(profile, isAuthorized));
   }
 
   @Override
-  public ResponseEntity<Resource> getProfileImageUrl() {
-    User user = authService.getCurrentUser();
-    Profile profile = profileRepository.findByUserId(user.getId())
-        .orElseThrow(
-            () -> new ResourceNotFoundException("Profile not found"));
-
-    try {
-      if (profile != null) {
-        Path filePath = this.fileStorageLocation.resolve(profile.getProfilePictureUrl())
-            .normalize();
-        Resource resource = new UrlResource(filePath.toUri());
-        if (resource.exists()) {
-          return ResponseEntity.ok()
-              .header(HttpHeaders.CONTENT_DISPOSITION,
-                  "attachment; filename=\"" + resource.getFilename() + "\"")
-              .body(resource);
-        }
-      }
-    } catch (MalformedURLException ex) {
-      return ResponseEntity.badRequest().build();
-    }
-    return ResponseEntity.notFound().build();
-  }
-
-  private Profile getCurrentUserProfile() {
+  public Profile getCurrentUserProfile() {
     UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication()
         .getPrincipal();
     String username = userDetails.getUsername();
@@ -187,6 +157,43 @@ public class ProfileServiceImpl implements ProfileService {
         .orElseThrow(() -> new RuntimeException("User not found"));
     return profileRepository.findByUserId(user.getId())
         .orElseThrow(() -> new RuntimeException("Profile not found for user"));
+  }
+
+
+  private ProfileSearchDTO mapToProfileSearchDTO(ProfileSearchProjection profile,
+      boolean isAuthenticated) {
+    ProfileSearchDTO dto = new ProfileSearchDTO();
+    dto.setId(profile.getId());
+    if (isAuthenticated) {
+      dto.setFirstName(profile.getFirstName());
+      dto.setMiddleName(profile.getMiddleName());
+      dto.setLastName(profile.getLastName());
+    } else {
+      dto.setFirstName(maskName(profile.getFirstName()));
+      dto.setMiddleName(maskName(profile.getMiddleName()));
+      dto.setLastName(maskName(profile.getLastName()));
+    }
+    // Map other fields that don't need masking
+    dto.setDateOfBirth(profile.getDateOfBirth());
+    dto.setReligion(profile.getReligion());
+    dto.setSect(profile.getSect());
+    dto.setOccupation(profile.getOccupation());
+    dto.setCity(profile.getCity());
+    dto.setState(profile.getState());
+    dto.setCountry(profile.getCountry());
+    dto.setHeight(profile.getHeight());
+    dto.setIncome(profile.getIncome());
+    dto.setMaritalStatus(profile.getMaritalStatus());
+    dto.setWorkplace(profile.getWorkplace());
+    dto.setPhotoUrl(profile.getPhotoUrl());
+    return dto;
+  }
+
+  private String maskName(String name) {
+    if (name == null || name.length() <= 1) {
+      return "X";
+    }
+    return name.charAt(0) + "*".repeat(name.length() - 1);
   }
 
   private ProfileDto getProfileDto(Profile profile) {
@@ -204,7 +211,10 @@ public class ProfileServiceImpl implements ProfileService {
         .city(profile.getCity())
         .state(profile.getState())
         .country(profile.getCountry())
-        .profilePictureUrl(profile.getProfilePictureUrl())
+        .height(profile.getHeight())
+        .maritalStatus(profile.getMaritalStatus())
+        .workplace(profile.getWorkplace())
+        .photoUrl(profile.getPhotoUrl())
         .build();
   }
 
