@@ -52,6 +52,16 @@
         <artifactId>opencv</artifactId>
         <version>4.5.1-2</version>
       </dependency>
+      <dependency>
+        <groupId>com.razorpay</groupId>
+        <artifactId>razorpay-java</artifactId>
+        <version>1.4.7</version>
+      </dependency>
+      <dependency>
+        <groupId>com.twilio.sdk</groupId>
+        <artifactId>twilio</artifactId>
+        <version>8.34.0</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -120,6 +130,30 @@
     <dependency>
       <groupId>org.openpnp</groupId>
       <artifactId>opencv</artifactId>
+    </dependency>
+
+    <!--    Razor pay -->
+    <dependency>
+      <groupId>com.razorpay</groupId>
+      <artifactId>razorpay-java</artifactId>
+    </dependency>
+
+    <!--    RabbitMQ-->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-amqp</artifactId>
+    </dependency>
+
+    <!--    Email Sender-->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-mail</artifactId>
+    </dependency>
+
+    <!--    Twilio-->
+    <dependency>
+      <groupId>com.twilio.sdk</groupId>
+      <artifactId>twilio</artifactId>
     </dependency>
 
     <dependency>

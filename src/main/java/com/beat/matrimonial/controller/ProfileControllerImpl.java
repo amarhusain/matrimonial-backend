@@ -6,6 +6,7 @@ import com.beat.matrimonial.entity.Profile;
 import com.beat.matrimonial.payload.response.MessageResponse;
 import com.beat.matrimonial.payload.response.ProfileResponse;
 import com.beat.matrimonial.service.ProfileServiceImpl;
+import com.beat.matrimonial.service.SubscriptionService;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -27,10 +28,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProfileControllerImpl implements ProfileController {
 
   private final ProfileServiceImpl profileService;
+  private final SubscriptionService subscriptionService;
 
   @Autowired
-  public ProfileControllerImpl(ProfileServiceImpl profileService) {
+  public ProfileControllerImpl(ProfileServiceImpl profileService,
+      SubscriptionService subscriptionService) {
     this.profileService = profileService;
+    this.subscriptionService = subscriptionService;
   }
 
 
@@ -104,6 +108,13 @@ public class ProfileControllerImpl implements ProfileController {
     Pageable pageable = PageRequest.of(page, size);
     Page<ProfileSearchDTO> list = profileService.searchProfiles(criteria, pageable);
     return ResponseEntity.ok(list);
+  }
+
+
+  @GetMapping("/{id}/subscription-status")
+  public ResponseEntity<Boolean> checkSubscriptionStatus(@PathVariable Long id) {
+    boolean hasSubscription = subscriptionService.hasActiveSubscription(id);
+    return ResponseEntity.ok(hasSubscription);
   }
 
 }
